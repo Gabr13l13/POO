@@ -1,0 +1,230 @@
+@startuml UMLDIAGRAM
+enum Location{
+    PortugalContinental
+    Madeira
+    Açores
+}
+
+enum PharmaProductCategory{
+    beauty
+    wellBeing
+    baby 
+    animal
+    other
+}
+
+enum Certification {
+    ISO22000
+    FSSC22000
+    HACCP
+    GMP
+}
+
+enum IntermediateTaxCategory{
+    frozen
+    canned
+    wine
+}
+
+class Invoice{
+    -invoiceNum: int
+    -client: Client
+    -date: String
+    -products: Arraylist<Product>
+
+    +Invoice(int invoiceNum, Client client, String date, ArrayList<Product> products): void
+    +getInvoiceNum(): int
+    +getClient(): Client
+    +getDate(): String
+    +getProducts(): ArrayList<Product>
+    +setInvoiceNum(int invoiceNum): void
+    +setClient(Client client): void
+    +setDate(String date): void
+    +setProducts(ArrayList<Product> products): void
+    +calculateTotalValueWithoutTax(): double
+    +calculateTotalValueWithTax(): double
+    +toString(): String
+}
+
+class InvoiceManager {
+    +InvoiceManager()
+    +createOrEditInvoice(cM: ClientManager, clients: ArrayList<Client>, invoices: ArrayList<Invoice>, scanner: Scanner): void
+    -createInvoice(cM: ClientManager, clients: ArrayList<Client>, invoices: ArrayList<Invoice>, scanner: Scanner, verifyManager: VerifyManager): void
+    -editInvoice(cM: ClientManager, clients: ArrayList<Client>, invoices: ArrayList<Invoice>, scanner: Scanner, verifyManager: VerifyManager): void
+    +showInvoices(invoices: ArrayList<Invoice>): void
+    +viewInvoice(invoices: ArrayList<Invoice>, scanner: Scanner): void
+    +statistics(invoices: ArrayList<Invoice>): void
+}
+
+class Client{
+    -name: String
+    -taxNumber: String
+    -location: Location
+
+    +Client(String name, String taxNumber, Location location): void
+    +getName(): String
+    +getTaxNumber(): String
+    +getLocation(): Location
+    +setName(String name): void
+    +setTaxNumber(String taxNumber): void
+    +setLocation(Location location): void
+    +toString(): String
+}
+
+class ClientManager{
+    +ClientManager()
+    +createOrEditClient(String name, String taxNumber, Location location): void
+    +createClient(ArrayList<Client> clients, Scanner scanner, VerifyManager verifyManager): void
+    +editClient(ArrayList<Client> clients): void
+    +showClients(ArrayList<Client> clients): void
+}
+
+abstract class Product{
+    -code: int
+    -name: String
+    -description: String
+    -amount: int
+    -unitValue: double
+    -taxRate: double
+
+    +Product(): void
+    +Product(int code, String name, String description, int amount, double unitValue): void
+    +getCode(): int
+    +getName(): String
+    +getDescription(): String
+    +getAmount(): int
+    +getUnitValue(): double
+    +getTaxRate(): double
+    +setCode(int code): void
+    +setName(String name): void
+    +setDescription(String description): void
+    +setAmount(int amount): void
+    +setUnitValue(double unitValue): void
+    +setTaxRate(double taxRate): void
+    +getTotalValueWithoutTax(): double
+    +getTotalValueWithTax(): double
+    +calculateTax(Location location): double
+    +writeFile(BufferedWriter bw): void
+}
+
+class FoodProduct extends Product{
+    -isBiologic: boolean
+
+    +FoodProduct(int code, String name, String description, int amount, double unitValue, boolean isBiologic): void
+    +isBiologic(): boolean
+    +setBiologic(boolean isBiologic): void
+    +calculateTax(Location location): double
+    +writeFile(BufferedWriter bw): void
+}
+
+class ReducedTax extends FoodProduct{
+    -certification: Arraylist<Certification>
+
+     +ReducedTax(int code, String name, String description, int amount, double unitValue, boolean isBiologic, ArrayList<Certification> certification_list): void
+     +setCertification(Certification certification): void
+     +getCertification(): ArrayList<Certification>
+     +calculateTax(Location location): double
+     +toString(): String
+     +writeFile(BufferedWriter bw): void
+}
+
+class IntermediateTax extends FoodProduct{
+    -category: IntermediateTaxCategory
+
+    +IntermediateTax(int code, String name, String description, int amount, double unitValue, boolean isBiologic, IntermediateTaxCategory category): void
+    +getCategory(): IntermediateTaxCategory
+    +setCategory(IntermediateTaxCategory category): void
+    +calculateTax(Location location): double
+    +toString(): String
+    +writeFile(BufferedWriter bw): void
+}
+
+class PharmaProductWithoutPrescription extends Product {
+    -category: PharmaProductCategory
+
+    +PharmaProductWithoutPrescription(int code, String name, String description, int amount, double unitValue, PharmaProductCategory category): void
+    +calculateTax(Location location): double
+    +toString(): String
+    +writeFile(BufferedWriter bw): void
+}
+
+class PharmaProductWithPrescription extends Product {
+    -doctor: String
+
+    +PharmaProductWithPrescription(int code, String name, String description, int amount, double unitValue, String doctor): void
+    +calculateTax(Location location): double
+    +toString(): String
+    +writeFile(BufferedWriter bw): void
+}
+
+class VerifyManager {
+    +VerifyManager()
+    +verifyTypeProduct(scanner: Scanner): int
+    +verifyAndSetIsBiologic(scanner: Scanner): boolean
+    +verifyAndSetTaxType(scanner: Scanner): int
+    +verifyAndSetTypePharma(scanner: Scanner): String
+    +verifyAndSetCertifications(scanner: Scanner, numCertifications: int): ArrayList<Certification>
+    +verifyCertificationsNum(scanner: Scanner): int
+    +verifyAndSetITCategory(scanner: Scanner): IntermediateTaxCategory
+    +verifyAndSetCategory(scanner: Scanner): PharmaProductCategory
+    +verifyDate(scanner: Scanner): String
+    +verifyInvoiceNumCreate(invoices: ArrayList<Invoice>, scanner: Scanner): int
+    +verifyInvoiceEdit(invoices: ArrayList<Invoice>, scanner: Scanner): Invoice
+    +verifyProductsNum(scanner: Scanner): int
+    +verifyClient(cM: ClientManager, clients: ArrayList<Client>, scanner: Scanner): Client
+    +verifyAndSelectOption(scanner: Scanner): int
+    +verifyClientWithNum(cM: ClientManager, clients: ArrayList<Client>, scanner: Scanner): Client
+    +verifyProductNum(invoice: Invoice, scanner: Scanner): int
+    +verifyProductOption(scanner: Scanner): int
+    +verifyProductCode(scanner: Scanner): int
+    +verifyString(scanner: Scanner, print: String): String
+    +verifyProductDescription(scanner: Scanner): String
+    +verifyProductQuantity(scanner: Scanner): int
+    +verifyProductPrice(scanner: Scanner): double
+    +verifyTaxNumber(scanner: Scanner): String
+    +verifyAndSetLocation(scanner: Scanner): Location
+    +verifyChangeProducts(scanner: Scanner): int
+}
+
+class FileManager{
+    +FileManager()
+    +exportInvoices(invoices: ArrayList<Invoice>): void
+    +importInvoices(invoices: ArrayList<Invoice>): void
+    +exportInvoicesForTXT(POOFS POOFS): void
+}
+
+class MenuManager {
+    +MenuManager()
+    +showASCII(): void
+    +showMenu(): void
+}
+
+class POOFS {
+    -invoices: ArrayList<Invoice>
+    -clients: ArrayList<Client>
+
+    +POOFS(invoices: ArrayList<Invoice>, clients: ArrayList<Client>): void
+    +getInvoices(): ArrayList<Invoice>
+    +getClients(): ArrayList<Client>
+    +main(args: String[]): void
+}
+
+
+Invoice "1" -- "1..*" Client
+Invoice "1" -- "1..*" Product
+PharmaProductWithoutPrescription "1" -- "1..*" PharmaProductCategory
+ReducedTax "0..4" -- "1" Certification
+IntermediateTax "1  " -- "1..* " IntermediateTaxCategory
+Client "1    " -- "1..*" Location
+
+ClientManager "1" -- "1..*" VerifyManager
+MenuManager "1" -- "1..*" VerifyManager
+InvoiceManager "1" -- "1..*" VerifyManager
+POOFS "1" -- "1..*" Invoice
+POOFS "1" -- "1..*" Client
+POOFS "1" -- "1..*" Product
+POOFS "1" -- "1..*" InvoiceManager
+POOFS "1" -- "1..*" ClientManager
+POOFS "1" -- "1..*" VerifyManager
+POOFS "1" -- "1..*" FileManager
+@enduml
